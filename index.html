@@ -18,8 +18,15 @@
       align-items: center;
     }
     h1 {
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
       text-shadow: 0 0 5px #000;
+    }
+    #fall-speed-label {
+      font-size: 1rem;
+      color: #ccc;
+      margin-bottom: 0.5rem;
+      align-self: flex-start;
+      padding-left: 1rem;
     }
     #lock-container {
       display: flex;
@@ -58,24 +65,12 @@
       background: #b8860b;
       border-radius: 1px;
     }
-    .speed-group {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.3rem;
-      width: 100%;
-    }
-    .speed-label {
-      font-size: 0.75rem;
-      color: #ccc;
-      min-width: 60px;
-      text-align: left;
-    }
     .speed-buttons {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 0.3rem;
-      flex: 1;
+      margin-bottom: 0.3rem;
+      width: 100%;
     }
     .speed-btn {
       padding: 0.25rem;
@@ -96,8 +91,7 @@
       min-height: 1.5rem;
       text-align: center;
     }
-    .clear-btn,
-    .clear-all-btn {
+    .clear-btn, .clear-all-btn {
       background: #661111;
       color: #fff;
       border: none;
@@ -106,8 +100,7 @@
       font-size: 0.7rem;
       cursor: pointer;
     }
-    .clear-btn:hover,
-    .clear-all-btn:hover {
+    .clear-btn:hover, .clear-all-btn:hover {
       background: #882222;
     }
     #clear-all {
@@ -120,11 +113,13 @@
       font-size: 1rem;
       min-height: 1.2rem;
       text-shadow: 0 0 3px #000;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <h1>Oblivion Lockpick Helper</h1>
+  <div id="fall-speed-label">Fall Speed</div>
 
   <div id="lock-container"></div>
   <button id="clear-all" class="clear-all-btn">Clear All</button>
@@ -148,7 +143,7 @@
     function capitalize(s) {
       return s
         .split(' ')
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' ');
     }
 
@@ -162,17 +157,9 @@
         mech.className = 'peg-mechanism';
         wrapper.appendChild(mech);
 
-        const group = document.createElement('div');
-        group.className = 'speed-group';
-
-        const label = document.createElement('div');
-        label.className = 'speed-label';
-        label.innerText = 'Fall Speed';
-        group.appendChild(label);
-
         const btns = document.createElement('div');
         btns.className = 'speed-buttons';
-        SPEEDS.forEach((s) => {
+        SPEEDS.forEach(s => {
           const btn = document.createElement('div');
           btn.className = 'speed-btn';
           btn.innerText = capitalize(s);
@@ -181,8 +168,7 @@
           btn.addEventListener('click', onSpeedClick);
           btns.appendChild(btn);
         });
-        group.appendChild(btns);
-        wrapper.appendChild(group);
+        wrapper.appendChild(btns);
 
         const log = document.createElement('div');
         log.className = 'peg-log';
@@ -228,7 +214,7 @@
       document.getElementById(`log-${i}`).innerText = speeds.join(', ');
       const msg = document.getElementById('message');
 
-      if (speeds.length < 1) {
+      if (speeds.length === 0) {
         msg.innerText = `Peg ${i + 1}: 0 click(s)`;
         return;
       }
@@ -248,10 +234,7 @@
       for (let L = 1; L <= arr.length / 2; L++) {
         let ok = true;
         for (let j = 0; j + L < arr.length; j++) {
-          if (arr[j] !== arr[j + L]) {
-            ok = false;
-            break;
-          }
+          if (arr[j] !== arr[j + L]) { ok = false; break; }
         }
         if (ok) return arr.slice(0, L);
       }
@@ -261,7 +244,7 @@
     function findSlowest(arr) {
       let minRank = Infinity;
       let slowest = arr[0];
-      arr.forEach((s) => {
+      arr.forEach(s => {
         if (RANK[s] < minRank) {
           minRank = RANK[s];
           slowest = s;
@@ -275,12 +258,12 @@
       const pos = arr.length % L;
       const indices = pattern
         .map((s, idx) => (s === target ? idx : -1))
-        .filter((idx) => idx >= 0);
+        .filter(idx => idx >= 0);
 
       if (!indices.length) return 'N/A';
 
       let minOffset = Infinity;
-      indices.forEach((idx) => {
+      indices.forEach(idx => {
         const off = (idx - pos + L) % L;
         if (off < minOffset) minOffset = off;
       });
