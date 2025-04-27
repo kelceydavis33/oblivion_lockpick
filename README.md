@@ -1,2 +1,4 @@
-# oblivion_lockpick
-Tool for decoding lockpick patterns in Oblivion, written for the remastered game
+# Oblivion Lockpick Tracker
+
+
+The code hosted here powers a tool to track the encoded patterns that determine lockpick peg speeds in oblivion. Pick any lock at any security level with simple tracking!
