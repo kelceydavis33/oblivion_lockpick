@@ -4,145 +4,216 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Oblivion Lockpick Helper</title>
-  <!-- Google AdSense Loader with your Publisher ID -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1890386686147698"
-          crossorigin="anonymous"></script>
+  <!-- Google AdSense Loader -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1890386686147698" crossorigin="anonymous"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; }
-    #peg-container { display: flex; gap: 1rem; margin-bottom: 1rem; }
-    .peg-wrapper { text-align: center; }
-    .peg {
-      width: 60px; height: 60px;
-      border: 2px solid #333; border-radius: 4px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      background: #f0f0f0;
-      user-select: none;
+    body {
+      background: #2f2f2f;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .peg-log { margin-top: 0.5rem; font-size: 0.8rem; color: #555; }
-    #message { margin-top: 1rem; font-weight: bold; }
-    button.clear-btn { margin-top: 0.5rem; padding: 0.2rem 0.5rem; font-size: 0.8rem; }
-    /* Ad container styling */
-    #ad-container { margin: 1rem 0; text-align: center; }
+    h1 {
+      margin-bottom: 1rem;
+      text-shadow: 0 0 5px #000;
+    }
+    #lock-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 1rem;
+      background: #3a3a3a;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: inset 0 0 10px #000000aa;
+    }
+    .peg-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100px;
+    }
+    .peg-mechanism {
+      width: 80px;
+      height: 20px;
+      background: linear-gradient(to bottom, #ffd700, #e6c200);
+      border: 2px solid #b8860b;
+      border-radius: 2px;
+      box-shadow: 0 0 5px #000 inset;
+      position: relative;
+      margin-bottom: 0.5rem;
+    }
+    .peg-mechanism::after {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 10px;
+      background: #b8860b;
+      border-radius: 1px;
+    }
+    .speed-buttons {
+      display: flex;
+      gap: 0.3rem;
+      margin-bottom: 0.3rem;
+    }
+    .speed-btn {
+      flex: 1;
+      padding: 0.25rem;
+      background: #f5deb3;
+      border: 1px solid #b8860b;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-align: center;
+      color: #333;
+    }
+    .speed-btn:hover {
+      background: #ffe4b5;
+    }
+    .peg-log {
+      font-size: 0.7rem;
+      color: #ccc;
+      min-height: 1.5rem;
+      text-align: center;
+    }
+    .clear-btn {
+      background: #661111;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      padding: 0.2rem 0.4rem;
+      font-size: 0.7rem;
+      cursor: pointer;
+      margin-top: 0.3rem;
+    }
+    .clear-btn:hover {
+      background: #882222;
+    }
+    #message {
+      margin-top: 1rem;
+      font-size: 1rem;
+      min-height: 1.2rem;
+      text-shadow: 0 0 3px #000;
+    }
   </style>
 </head>
 <body>
   <h1>Oblivion Lockpick Helper</h1>
+  <div id="lock-container"></div>
 
-  <div id="peg-container"></div>
+  <!-- Ad slot -->
+  <ins class="adsbygoogle"
+       style="display:block; max-width:320px; margin:1rem auto;"
+       data-ad-client="ca-pub-1890386686147698"
+       data-ad-slot="1625865832"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 
-  <!-- Google AdSense Ad Unit -->
-  <div id="ad-container">
-    <!-- oblivionlock -->
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-1890386686147698"
-         data-ad-slot="1625865832"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </div>
-
-  <div id="message">Click a peg to log its speed.</div>
+  <div id="message">Select a speed for each peg.</div>
 
   <script>
-    const SPEEDS = ['very slow', 'slow', 'medium', 'fast'];
-    const pegData = Array(5).fill(null).map(() => []);
+    const SPEEDS = ['very slow','slow','medium','fast'];
+    const pegData = Array(5).fill().map(() => []);
 
     function init() {
-      const container = document.getElementById('peg-container');
-      for (let i = 0; i < 5; i++) {
+      const container = document.getElementById('lock-container');
+      for (let i=0; i<5; i++) {
         const wrapper = document.createElement('div');
         wrapper.className = 'peg-wrapper';
+        
+        const mech = document.createElement('div');
+        mech.className = 'peg-mechanism';
+        wrapper.appendChild(mech);
 
-        const peg = document.createElement('div');
-        peg.className = 'peg';
-        peg.dataset.index = i;
-        peg.innerText = `Peg ${i + 1}`;
-        peg.addEventListener('click', onPegClick);
+        const btns = document.createElement('div');
+        btns.className = 'speed-buttons';
+        SPEEDS.forEach(speed => {
+          const btn = document.createElement('div');
+          btn.className = 'speed-btn';
+          btn.innerText = speed;
+          btn.dataset.index = i;
+          btn.dataset.speed = speed;
+          btn.addEventListener('click', onSpeedClick);
+          btns.appendChild(btn);
+        });
+        wrapper.appendChild(btns);
 
         const log = document.createElement('div');
         log.className = 'peg-log';
         log.id = `log-${i}`;
-        log.innerText = '';
-
-        const clearBtn = document.createElement('button');
-        clearBtn.className = 'clear-btn';
-        clearBtn.innerText = 'Clear';
-        clearBtn.dataset.index = i;
-        clearBtn.addEventListener('click', onClearClick);
-
-        wrapper.appendChild(peg);
         wrapper.appendChild(log);
-        wrapper.appendChild(clearBtn);
+
+        const clear = document.createElement('button');
+        clear.className = 'clear-btn';
+        clear.innerText = 'Clear';
+        clear.dataset.index = i;
+        clear.addEventListener('click', onClearClick);
+        wrapper.appendChild(clear);
+
         container.appendChild(wrapper);
       }
     }
 
-    function onPegClick(event) {
-      const idx = +event.currentTarget.dataset.index;
-      const speed = prompt(`Enter speed for Peg ${idx + 1} (very slow, slow, medium, fast):`).trim().toLowerCase();
-      if (!SPEEDS.includes(speed)) {
-        alert('Invalid speed. Please enter: ' + SPEEDS.join(', '));
-        return;
-      }
+    function onSpeedClick(e) {
+      const idx = +e.currentTarget.dataset.index;
+      const speed = e.currentTarget.dataset.speed;
       pegData[idx].push(speed);
       updateDisplay(idx);
     }
 
-    function onClearClick(event) {
-      const idx = +event.currentTarget.dataset.index;
+    function onClearClick(e) {
+      const idx = +e.currentTarget.dataset.index;
       pegData[idx] = [];
       updateDisplay(idx);
     }
 
-    function updateDisplay(idx) {
-      const speeds = pegData[idx];
-      document.getElementById(`log-${idx}`).innerText = speeds.join(', ');
-
-      const message = document.getElementById('message');
+    function updateDisplay(i) {
+      const speeds = pegData[i];
+      document.getElementById(`log-${i}`).innerText = speeds.join(', ');
+      const msg = document.getElementById('message');
       if (speeds.length < 2) {
-        message.innerText = `Peg ${idx + 1}: logged ${speeds.length} click(s).`;
+        msg.innerText = `Peg ${i+1}: ${speeds.length} click(s)`;
       } else {
-        const pattern = detectPattern(speeds);
-        if (pattern) {
-          const clicks = clicksToSlowest(speeds, pattern);
-          message.innerText = `Peg ${idx + 1} pattern: [${pattern.join(' → ')}]. Click ${clicks} more time(s) to reach 'very slow'.`;
+        const pat = detectPattern(speeds);
+        if (pat) {
+          const toSlow = clicksToSlowest(speeds, pat);
+          msg.innerText = `Peg ${i+1} pattern [${pat.join('→')}], click ${toSlow} more to 'very slow'.`;
         } else {
-          message.innerText = `Peg ${idx + 1}: no repeating pattern detected yet.`;
+          msg.innerText = `Peg ${i+1}: no pattern yet.`;
         }
       }
     }
 
     function detectPattern(arr) {
-      for (let L = 1; L <= arr.length / 2; L++) {
-        let repeating = true;
-        for (let i = 0; i + L < arr.length; i++) {
-          if (arr[i] !== arr[i + L]) { repeating = false; break; }
+      for (let L=1; L<=arr.length/2; L++){
+        let ok=true;
+        for (let j=0;j+L<arr.length;j++){
+          if(arr[j]!==arr[j+L]){ok=false; break;}
         }
-        if (repeating) return arr.slice(0, L);
+        if(ok) return arr.slice(0,L);
       }
       return null;
     }
 
-    function clicksToSlowest(arr, pattern) {
-      const L = pattern.length;
+    function clicksToSlowest(arr, pat) {
+      const L = pat.length;
       const pos = arr.length % L;
-      const slowIdxs = pattern.map((s, i) => s === 'very slow' ? i : -1).filter(i => i >= 0);
-      if (!slowIdxs.length) return 'N/A';
-
-      let minOffset = Infinity;
-      slowIdxs.forEach(i => {
-        const offset = (i - pos + L) % L;
-        if (offset < minOffset) minOffset = offset;
-      });
-      return minOffset === 0 ? L : minOffset;
+      const slows = pat.map((s,i)=>s==='very slow'?i:-1).filter(i=>i>=0);
+      if(!slows.length) return 'N/A';
+      let min=Infinity;
+      slows.forEach(i=>{const off=(i-pos+L)%L; if(off<min)min=off;});
+      return min===0?L:min;
     }
 
     window.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
-
