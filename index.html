@@ -74,6 +74,7 @@
       cursor: pointer;
       text-align: center;
       color: #333;
+      text-transform: capitalize;
     }
     .speed-btn:hover {
       background: #ffe4b5;
@@ -93,6 +94,7 @@
       padding: 0.2rem 0.4rem;
       font-size: 0.7rem;
       cursor: pointer;
+      text-transform: capitalize;
     }
     .clear-btn:hover,
     .clear-all-btn:hover {
@@ -134,13 +136,6 @@
     const RANK = { 'very slow': 0, 'slow': 1, 'medium': 2, 'fast': 3 };
     const pegData = Array(5).fill().map(() => []);
 
-    function capitalize(s) {
-      return s
-        .split(' ')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-    }
-
     function init() {
       const container = document.getElementById('lock-container');
       for (let i = 0; i < 5; i++) {
@@ -156,7 +151,7 @@
         SPEEDS.forEach(s => {
           const btn = document.createElement('div');
           btn.className = 'speed-btn';
-          btn.innerText = capitalize(s);
+          btn.innerText = s;
           btn.dataset.index = i;
           btn.dataset.speed = s;
           btn.addEventListener('click', onSpeedClick);
@@ -171,7 +166,7 @@
 
         const clear = document.createElement('button');
         clear.className = 'clear-btn';
-        clear.innerText = 'Clear';
+        clear.innerText = 'clear';
         clear.dataset.index = i;
         clear.addEventListener('click', onClearClick);
         wrapper.appendChild(clear);
@@ -209,7 +204,7 @@
       const msg = document.getElementById('message');
 
       if (speeds.length === 0) {
-        msg.innerText = `Peg ${i + 1}: 0 click(s)`;
+        msg.innerText = `peg ${i + 1}: 0 click(s)`;
         return;
       }
 
@@ -218,9 +213,9 @@
 
       if (pattern) {
         const toTarget = clicksToTarget(speeds, pattern, target);
-        msg.innerText = `Peg ${i + 1} pattern [${pattern.map(capitalize).join(' → ')}], click ${toTarget} more to '${capitalize(target)}'.`;
+        msg.innerText = `peg ${i + 1} pattern [${pattern.join(' → ')}], click ${toTarget} more to '${target}'.`;
       } else {
-        msg.innerText = `Peg ${i + 1}: no pattern yet.`;
+        msg.innerText = `peg ${i + 1}: no pattern yet.`;
       }
     }
 
