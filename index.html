@@ -38,9 +38,9 @@
       width: 100px;
     }
     .peg-mechanism {
-      width: 80px;
-      height: 20px;
-      background: linear-gradient(to bottom, #ffd700, #e6c200);
+      width: 20px;
+      height: 80px;
+      background: linear-gradient(to right, #ffd700, #e6c200);
       border: 2px solid #b8860b;
       border-radius: 2px;
       box-shadow: 0 0 5px #000 inset;
@@ -50,21 +50,22 @@
     .peg-mechanism::after {
       content: '';
       position: absolute;
-      top: -6px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 4px;
-      height: 10px;
+      left: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 10px;
+      height: 4px;
       background: #b8860b;
       border-radius: 1px;
     }
     .speed-buttons {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 0.3rem;
       margin-bottom: 0.3rem;
+      width: 100%;
     }
     .speed-btn {
-      flex: 1;
       padding: 0.25rem;
       background: #f5deb3;
       border: 1px solid #b8860b;
@@ -120,15 +121,15 @@
   <div id="message">Select a speed for each peg.</div>
 
   <script>
-    const SPEEDS = ['very slow','slow','medium','fast'];
+    const SPEEDS = ['very slow', 'slow', 'medium', 'fast'];
     const pegData = Array(5).fill().map(() => []);
 
     function init() {
       const container = document.getElementById('lock-container');
-      for (let i=0; i<5; i++) {
+      for (let i = 0; i < 5; i++) {
         const wrapper = document.createElement('div');
         wrapper.className = 'peg-wrapper';
-        
+
         const mech = document.createElement('div');
         mech.className = 'peg-mechanism';
         wrapper.appendChild(mech);
@@ -180,25 +181,25 @@
       document.getElementById(`log-${i}`).innerText = speeds.join(', ');
       const msg = document.getElementById('message');
       if (speeds.length < 2) {
-        msg.innerText = `Peg ${i+1}: ${speeds.length} click(s)`;
+        msg.innerText = `Peg ${i + 1}: ${speeds.length} click(s)`;
       } else {
         const pat = detectPattern(speeds);
         if (pat) {
           const toSlow = clicksToSlowest(speeds, pat);
-          msg.innerText = `Peg ${i+1} pattern [${pat.join('→')}], click ${toSlow} more to 'very slow'.`;
+          msg.innerText = `Peg ${i + 1} pattern [${pat.join(' → ')}], click ${toSlow} more to 'very slow'.`;
         } else {
-          msg.innerText = `Peg ${i+1}: no pattern yet.`;
+          msg.innerText = `Peg ${i + 1}: no pattern yet.`;
         }
       }
     }
 
     function detectPattern(arr) {
-      for (let L=1; L<=arr.length/2; L++){
-        let ok=true;
-        for (let j=0;j+L<arr.length;j++){
-          if(arr[j]!==arr[j+L]){ok=false; break;}
+      for (let L = 1; L <= arr.length / 2; L++) {
+        let ok = true;
+        for (let j = 0; j + L < arr.length; j++) {
+          if (arr[j] !== arr[j + L]) { ok = false; break; }
         }
-        if(ok) return arr.slice(0,L);
+        if (ok) return arr.slice(0, L);
       }
       return null;
     }
@@ -206,11 +207,14 @@
     function clicksToSlowest(arr, pat) {
       const L = pat.length;
       const pos = arr.length % L;
-      const slows = pat.map((s,i)=>s==='very slow'?i:-1).filter(i=>i>=0);
-      if(!slows.length) return 'N/A';
-      let min=Infinity;
-      slows.forEach(i=>{const off=(i-pos+L)%L; if(off<min)min=off;});
-      return min===0?L:min;
+      const slows = pat.map((s, idx) => s === 'very slow' ? idx : -1).filter(idx => idx >= 0);
+      if (!slows.length) return 'N/A';
+      let min = Infinity;
+      slows.forEach(idx => {
+        const off = (idx - pos + L) % L;
+        if (off < min) min = off;
+      });
+      return min === 0 ? L : min;
     }
 
     window.addEventListener('DOMContentLoaded', init);
