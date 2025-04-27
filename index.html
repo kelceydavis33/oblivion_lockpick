@@ -58,12 +58,24 @@
       background: #b8860b;
       border-radius: 1px;
     }
+    .speed-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.3rem;
+      width: 100%;
+    }
+    .speed-label {
+      font-size: 0.75rem;
+      color: #ccc;
+      min-width: 60px;
+      text-align: left;
+    }
     .speed-buttons {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 0.3rem;
-      margin-bottom: 0.3rem;
-      width: 100%;
+      flex: 1;
     }
     .speed-btn {
       padding: 0.25rem;
@@ -84,7 +96,8 @@
       min-height: 1.5rem;
       text-align: center;
     }
-    .clear-btn {
+    .clear-btn,
+    .clear-all-btn {
       background: #661111;
       color: #fff;
       border: none;
@@ -92,10 +105,15 @@
       padding: 0.2rem 0.4rem;
       font-size: 0.7rem;
       cursor: pointer;
-      margin-top: 0.3rem;
     }
-    .clear-btn:hover {
+    .clear-btn:hover,
+    .clear-all-btn:hover {
       background: #882222;
+    }
+    #clear-all {
+      margin: 1rem 0;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
     }
     #message {
       margin-top: 1rem;
@@ -107,7 +125,9 @@
 </head>
 <body>
   <h1>Oblivion Lockpick Helper</h1>
+
   <div id="lock-container"></div>
+  <button id="clear-all" class="clear-all-btn">Clear All</button>
 
   <!-- Ad slot -->
   <ins class="adsbygoogle"
@@ -122,7 +142,15 @@
 
   <script>
     const SPEEDS = ['very slow', 'slow', 'medium', 'fast'];
+    const RANK = { 'very slow': 0, 'slow': 1, 'medium': 2, 'fast': 3 };
     const pegData = Array(5).fill().map(() => []);
+
+    function capitalize(s) {
+      return s
+        .split(' ')
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+    }
 
     function init() {
       const container = document.getElementById('lock-container');
@@ -134,18 +162,27 @@
         mech.className = 'peg-mechanism';
         wrapper.appendChild(mech);
 
+        const group = document.createElement('div');
+        group.className = 'speed-group';
+
+        const label = document.createElement('div');
+        label.className = 'speed-label';
+        label.innerText = 'Fall Speed';
+        group.appendChild(label);
+
         const btns = document.createElement('div');
         btns.className = 'speed-buttons';
-        SPEEDS.forEach(speed => {
+        SPEEDS.forEach((s) => {
           const btn = document.createElement('div');
           btn.className = 'speed-btn';
-          btn.innerText = speed;
+          btn.innerText = capitalize(s);
           btn.dataset.index = i;
-          btn.dataset.speed = speed;
+          btn.dataset.speed = s;
           btn.addEventListener('click', onSpeedClick);
           btns.appendChild(btn);
         });
-        wrapper.appendChild(btns);
+        group.appendChild(btns);
+        wrapper.appendChild(group);
 
         const log = document.createElement('div');
         log.className = 'peg-log';
@@ -161,6 +198,8 @@
 
         container.appendChild(wrapper);
       }
+
+      document.getElementById('clear-all').addEventListener('click', clearAll);
     }
 
     function onSpeedClick(e) {
@@ -176,20 +215,32 @@
       updateDisplay(idx);
     }
 
+    function clearAll() {
+      pegData.forEach((_, i) => {
+        pegData[i] = [];
+        document.getElementById(`log-${i}`).innerText = '';
+      });
+      document.getElementById('message').innerText = 'Select a speed for each peg.';
+    }
+
     function updateDisplay(i) {
       const speeds = pegData[i];
       document.getElementById(`log-${i}`).innerText = speeds.join(', ');
       const msg = document.getElementById('message');
-      if (speeds.length < 2) {
-        msg.innerText = `Peg ${i + 1}: ${speeds.length} click(s)`;
+
+      if (speeds.length < 1) {
+        msg.innerText = `Peg ${i + 1}: 0 click(s)`;
+        return;
+      }
+
+      const pattern = detectPattern(speeds);
+      const target = findSlowest(pattern || speeds);
+
+      if (pattern) {
+        const toTarget = clicksToTarget(speeds, pattern, target);
+        msg.innerText = `Peg ${i + 1} pattern [${pattern.map(capitalize).join(' → ')}], click ${toTarget} more to '${capitalize(target)}'.`;
       } else {
-        const pat = detectPattern(speeds);
-        if (pat) {
-          const toSlow = clicksToSlowest(speeds, pat);
-          msg.innerText = `Peg ${i + 1} pattern [${pat.join(' → ')}], click ${toSlow} more to 'very slow'.`;
-        } else {
-          msg.innerText = `Peg ${i + 1}: no pattern yet.`;
-        }
+        msg.innerText = `Peg ${i + 1}: no pattern yet.`;
       }
     }
 
@@ -197,24 +248,43 @@
       for (let L = 1; L <= arr.length / 2; L++) {
         let ok = true;
         for (let j = 0; j + L < arr.length; j++) {
-          if (arr[j] !== arr[j + L]) { ok = false; break; }
+          if (arr[j] !== arr[j + L]) {
+            ok = false;
+            break;
+          }
         }
         if (ok) return arr.slice(0, L);
       }
       return null;
     }
 
-    function clicksToSlowest(arr, pat) {
-      const L = pat.length;
-      const pos = arr.length % L;
-      const slows = pat.map((s, idx) => s === 'very slow' ? idx : -1).filter(idx => idx >= 0);
-      if (!slows.length) return 'N/A';
-      let min = Infinity;
-      slows.forEach(idx => {
-        const off = (idx - pos + L) % L;
-        if (off < min) min = off;
+    function findSlowest(arr) {
+      let minRank = Infinity;
+      let slowest = arr[0];
+      arr.forEach((s) => {
+        if (RANK[s] < minRank) {
+          minRank = RANK[s];
+          slowest = s;
+        }
       });
-      return min === 0 ? L : min;
+      return slowest;
+    }
+
+    function clicksToTarget(arr, pattern, target) {
+      const L = pattern.length;
+      const pos = arr.length % L;
+      const indices = pattern
+        .map((s, idx) => (s === target ? idx : -1))
+        .filter((idx) => idx >= 0);
+
+      if (!indices.length) return 'N/A';
+
+      let minOffset = Infinity;
+      indices.forEach((idx) => {
+        const off = (idx - pos + L) % L;
+        if (off < minOffset) minOffset = off;
+      });
+      return minOffset === 0 ? L : minOffset;
     }
 
     window.addEventListener('DOMContentLoaded', init);
