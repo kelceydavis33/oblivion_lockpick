@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oblivion Lockpick Helper</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; }
+    #peg-container { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .peg-wrapper { text-align: center; }
+    .peg {
+      width: 60px; height: 60px;
+      border: 2px solid #333; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      background: #f0f0f0;
+      user-select: none;
+    }
+    .peg-log { margin-top: 0.5rem; font-size: 0.8rem; color: #555; }
+    #message { margin-top: 1rem; font-weight: bold; }
+    button.clear-btn { margin-top: 0.5rem; padding: 0.2rem 0.5rem; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <h1>Oblivion Lockpick Helper</h1>
+  <div id="peg-container"></div>
+  <div id="message">Click a peg to log its speed.</div>
+
+  <script>
+    const SPEEDS = ['very slow', 'slow', 'medium', 'fast'];
+    // Each element will store an array of recorded speeds for that peg
+    const pegData = Array(5).fill(null).map(() => []);
+
+    function init() {
+      const container = document.getElementById('peg-container');
+      for (let i = 0; i < 5; i++) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'peg-wrapper';
+
+        const peg = document.createElement('div');
+        peg.className = 'peg';
+        peg.dataset.index = i;
+        peg.innerText = `Peg ${i + 1}`;
+        peg.addEventListener('click', onPegClick);
+
+        const log = document.createElement('div');
+        log.className = 'peg-log';
+        log.id = `log-${i}`;
+        log.innerText = '';
+
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'clear-btn';
+        clearBtn.innerText = 'Clear';
+        clearBtn.dataset.index = i;
+        clearBtn.addEventListener('click', onClearClick);
+
+        wrapper.appendChild(peg);
+        wrapper.appendChild(log);
+        wrapper.appendChild(clearBtn);
+        container.appendChild(wrapper);
+      }
+    }
+
+    function onPegClick(event) {
+      const idx = +event.currentTarget.dataset.index;
+      const speed = prompt(`Enter speed for Peg ${idx + 1} (very slow, slow, medium, fast):`).trim().toLowerCase();
+      if (!SPEEDS.includes(speed)) {
+        alert('Invalid speed. Please enter: ' + SPEEDS.join(', '));
+        return;
+      }
+      pegData[idx].push(speed);
+      updateDisplay(idx);
+    }
+
+    function onClearClick(event) {
+      const idx = +event.currentTarget.dataset.index;
+      pegData[idx] = [];
+      updateDisplay(idx);
+    }
+
+    function updateDisplay(idx) {
+      const speeds = pegData[idx];
+      document.getElementById(`log-${idx}`).innerText = speeds.join(', ');
+
+      const message = document.getElementById('message');
+      if (speeds.length < 2) {
+        message.innerText = `Peg ${idx + 1}: logged ${speeds.length} click(s).`;
+      } else {
+        const pattern = detectPattern(speeds);
+        if (pattern) {
+          const clicks = clicksToSlowest(speeds, pattern);
+          message.innerText = `Peg ${idx + 1} pattern: [${pattern.join(' → ')}]. ` +
+                              `Click ${clicks} more time(s) to reach 'very slow'.`;
+        } else {
+          message.innerText = `Peg ${idx + 1}: no repeating pattern detected yet.`;
+        }
+      }
+    }
+
+    // Find the shortest repeating pattern prefix
+    function detectPattern(arr) {
+      for (let L = 1; L <= arr.length / 2; L++) {
+        let repeating = true;
+        for (let i = 0; i + L < arr.length; i++) {
+          if (arr[i] !== arr[i + L]) {
+            repeating = false;
+            break;
+          }
+        }
+        if (repeating) return arr.slice(0, L);
+      }
+      return null;
+    }
+
+    // Calculate how many clicks to reach the slowest speed ('very slow')
+    function clicksToSlowest(arr, pattern) {
+      const L = pattern.length;
+      const pos = arr.length % L;
+      // indices where pattern === 'very slow'
+      const slowIdxs = pattern
+        .map((s, i) => s === 'very slow' ? i : -1)
+        .filter(i => i >= 0);
+      if (!slowIdxs.length) return 'N/A';
+
+      let minOffset = Infinity;
+      slowIdxs.forEach(i => {
+        const offset = (i - pos + L) % L;
+        if (offset < minOffset) minOffset = offset;
+      });
+      return minOffset === 0 ? L : minOffset;
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
