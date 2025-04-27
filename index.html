@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Oblivion Lockpick Helper</title>
   <!-- Google AdSense Loader -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1890386686147698" crossorigin="anonymous"></script>
@@ -112,29 +112,6 @@
       text-shadow: 0 0 3px #000;
       text-align: center;
     }
-
-    /* Responsive layout for mobile */
-    @media (max-width: 600px) {
-      body {
-        font-size: 0.9rem;
-      }
-      #lock-container {
-        flex-direction: column;
-        align-items: center;
-      }
-      .peg-wrapper {
-        width: 100%;
-        max-width: 200px;
-        margin-bottom: 1rem;
-      }
-      .speed-buttons {
-        grid-template-columns: 1fr;
-      }
-      #clear-all {
-        width: 100%;
-        max-width: 200px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -157,7 +134,7 @@
   <script>
     const SPEEDS = ['very slow', 'slow', 'medium', 'fast'];
     const RANK = { 'very slow': 0, 'slow': 1, 'medium': 2, 'fast': 3 };
-    const pegData = Array(5).fill().map(() => []);
+    const pegData = Array(5).fill(null).map(() => []);
 
     function init() {
       const container = document.getElementById('lock-container');
@@ -176,7 +153,7 @@
           btn.className = 'speed-btn';
           btn.innerText = s;
           btn.dataset.index = i;
-          btn.dataset-speed = s;
+          btn.dataset.speed = s;
           btn.addEventListener('click', onSpeedClick);
           btns.appendChild(btn);
         });
@@ -202,7 +179,7 @@
 
     function onSpeedClick(e) {
       const idx = +e.currentTarget.dataset.index;
-      const speed = e.currentTarget.datasetSpeed;
+      const speed = e.currentTarget.dataset.speed;
       pegData[idx].push(speed);
       updateDisplay(idx);
     }
@@ -226,7 +203,7 @@
       document.getElementById(`log-${i}`).innerText = speeds.join(', ');
       const msg = document.getElementById('message');
 
-      if (!speeds.length) {
+      if (speeds.length === 0) {
         msg.innerText = `Peg ${i + 1}: 0 click(s)`;
         return;
       }
