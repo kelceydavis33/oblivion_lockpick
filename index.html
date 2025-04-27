@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Oblivion Lockpick Helper</title>
+  <!-- Google AdSense: using your publisher ID -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+          data-ad-client="ca-pub-1890386686147698"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 2rem; }
     #peg-container { display: flex; gap: 1rem; margin-bottom: 1rem; }
@@ -19,16 +22,33 @@
     .peg-log { margin-top: 0.5rem; font-size: 0.8rem; color: #555; }
     #message { margin-top: 1rem; font-weight: bold; }
     button.clear-btn { margin-top: 0.5rem; padding: 0.2rem 0.5rem; font-size: 0.8rem; }
+    /* Ad container styling */
+    #ad-container {
+      margin: 1rem 0;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <h1>Oblivion Lockpick Helper</h1>
+
   <div id="peg-container"></div>
+
+  <!-- Ad slot: 300x250 responsive rectangle -->
+  <div id="ad-container">
+    <ins class="adsbygoogle"
+         style="display:inline-block;width:300px;height:250px"
+         data-ad-client="ca-pub-1890386686147698"
+         data-ad-slot="YYYYYYYYYY"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+
   <div id="message">Click a peg to log its speed.</div>
 
   <script>
     const SPEEDS = ['very slow', 'slow', 'medium', 'fast'];
-    // Each element will store an array of recorded speeds for that peg
     const pegData = Array(5).fill(null).map(() => []);
 
     function init() {
@@ -89,37 +109,28 @@
         const pattern = detectPattern(speeds);
         if (pattern) {
           const clicks = clicksToSlowest(speeds, pattern);
-          message.innerText = `Peg ${idx + 1} pattern: [${pattern.join(' → ')}]. ` +
-                              `Click ${clicks} more time(s) to reach 'very slow'.`;
+          message.innerText = `Peg ${idx + 1} pattern: [${pattern.join(' → ')}]. Click ${clicks} more time(s) to reach 'very slow'.`;
         } else {
           message.innerText = `Peg ${idx + 1}: no repeating pattern detected yet.`;
         }
       }
     }
 
-    // Find the shortest repeating pattern prefix
     function detectPattern(arr) {
       for (let L = 1; L <= arr.length / 2; L++) {
         let repeating = true;
         for (let i = 0; i + L < arr.length; i++) {
-          if (arr[i] !== arr[i + L]) {
-            repeating = false;
-            break;
-          }
+          if (arr[i] !== arr[i + L]) { repeating = false; break; }
         }
         if (repeating) return arr.slice(0, L);
       }
       return null;
     }
 
-    // Calculate how many clicks to reach the slowest speed ('very slow')
     function clicksToSlowest(arr, pattern) {
       const L = pattern.length;
       const pos = arr.length % L;
-      // indices where pattern === 'very slow'
-      const slowIdxs = pattern
-        .map((s, i) => s === 'very slow' ? i : -1)
-        .filter(i => i >= 0);
+      const slowIdxs = pattern.map((s, i) => s === 'very slow' ? i : -1).filter(i => i >= 0);
       if (!slowIdxs.length) return 'N/A';
 
       let minOffset = Infinity;
